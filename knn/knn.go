@@ -76,7 +76,7 @@ func KnnClassify(k int, points []LabeledPoint, point []float64) LabeledPoint {
 		sortedLabels[i] = lpoint.label
 	}
 
-	label := MajorityVote(sortedLabels)
+	label := MajorityVote(sortedLabels[:k])
 
 	var classifiedPoint LabeledPoint
 	classifiedPoint.point = point
