@@ -29,7 +29,7 @@ func splitData(data []LabeledPoint, testPercent float64) (train, test []LabeledP
 }
 
 func readIris() []LabeledPoint {
-	f, err := os.Open("/Users/dancoope/go/data/iris.csv")
+	f, err := os.Open("~/go/data/iris.csv")
 	checkError(err)
 	defer f.Close()
 
