@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"regexp"
+	"strings"
 )
 
 var EXISTS = struct{}{}
@@ -12,16 +13,18 @@ func Tokenize(message string) []string {
 	if err != nil {
 		log.Fatalf("could not compile re: %s", err)
 	}
-	words := re.FindAll([]byte(message))
+	words := re.FindAll([]byte(strings.ToLower(message)), -1)
 
 	wordMap := make(map[string]struct{})
 	for _, w := range words {
-		uniquewords[w] = EXISTS
+		wordMap[w] = EXISTS
 	}
 
 	uniquewords := make([]string, "", len(wordMap))
+	var i int
 	for word := range wordMap {
-		uniquewords = append(uniquewords, word)
+		uniquewords[i] = word
+		i++
 	}
 	return uniquewords
 }
