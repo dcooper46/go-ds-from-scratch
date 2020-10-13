@@ -15,12 +15,13 @@ var (
 	filesDir = flag.String("files", "", "directory of spam files")
 )
 
-type email struct {
-	subject string
-	isSpam  bool
+type prediction struct {
+	subject       string
+	isSpam        bool
+	predictedProb float64
 }
 
-func readFiles() []email {
+func readFiles() []Record {
 	// files, err := filepath.Glob(*filesDir)
 	// if err != nil {
 	// 	log.Fatal(err)
@@ -29,7 +30,7 @@ func readFiles() []email {
 	// log.Printf("found %d files to process", len(files))
 	// log.Println(files)
 
-	var data []email
+	var data []Record
 
 	filepath.Walk(*filesDir, func(path string, info os.FileInfo, e error) error {
 		if e != nil {
@@ -56,7 +57,7 @@ func readFiles() []email {
 
 				if strings.HasPrefix(text, "Subject: ") {
 					subject := strings.Replace(text, "Subject: ", "", 1)
-					data = append(data, email{subject: subject, isSpam: isSpam})
+					data = append(data, Record{message: subject, hit: isSpam})
 				}
 			}
 		}
@@ -74,8 +75,7 @@ func main() {
 	fmt.Printf("found %d files\n", len(rawData))
 	fmt.Println(rawData[0])
 
-	// split data into train and test
-	var train, test []email
+	var train, test []Record
 	for _, data := range rawData {
 		if rand.Float64() < 0.75 {
 			train = append(train, data)
@@ -85,8 +85,33 @@ func main() {
 	}
 
 	fmt.Printf("train: %d, test: %d\n", len(train), len(test))
-	// build classifier
-	// train
-	// classify test data
-	// count truth/predictions
+
+	classifier := NaiveBayesClassifier{k: 0.5}
+
+	classifier.Train(train)
+
+	predictions := make([]prediction, len(test))
+	for i, data := range test {
+		predictedProb := classifier.Classify(data.message)
+		predictions[i] = prediction{
+			subject:       data.message,
+			isSpam:        data.hit,
+			predictedProb: predictedProb,
+		}
+	}
+
+	counts := make(map[string]int, 4)
+	for _, pred := range predictions {
+		if pred.isSpam && pred.predictedProb > 0.5 {
+			counts["TT"]++
+		} else if pred.isSpam && pred.predictedProb <= 0.5 {
+			counts["TF"]++
+		} else if !pred.isSpam && pred.predictedProb > 0.5 {
+			counts["FT"]++
+		} else {
+			counts["FF"]++
+		}
+	}
+
+	fmt.Println(counts)
 }

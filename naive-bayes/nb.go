@@ -10,7 +10,8 @@ import (
 // EXISTS is a dummy value for sets
 var EXISTS = struct{}{}
 
-type record struct {
+// Record contains the message we're interested in
+type Record struct {
 	message string
 	hit     bool
 }
@@ -55,7 +56,7 @@ func Tokenize(message string) []string {
 
 // CountWords counts the occurence of each unique word
 // in a training corpus
-func CountWords(records []record) map[string]map[string]int {
+func CountWords(records []Record) map[string]map[string]int {
 	counts := make(map[string]map[string]int)
 
 	for _, rec := range records {
@@ -124,7 +125,7 @@ type NaiveBayesClassifier struct {
 
 // Train calculates word probabilities given a
 // training set of messages
-func (nb *NaiveBayesClassifier) Train(data []record) {
+func (nb *NaiveBayesClassifier) Train(data []Record) {
 	var nhits, nmisses int
 	for _, rec := range data {
 		if rec.hit {
