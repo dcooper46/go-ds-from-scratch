@@ -4,8 +4,8 @@ import "math"
 
 // Covariance between two float64 vectors
 func Covariance(x, y []float64) float64 {
-	mux := mean(x)
-	muy := mean(y)
+	mux := Mean(x)
+	muy := Mean(y)
 	var cov float64
 	for i, xi := range x {
 		cov += (xi - mux) * (y[i] - muy)
@@ -16,10 +16,10 @@ func Covariance(x, y []float64) float64 {
 // Correlation gives the linear dependence between
 // two float64 vectors
 func Correlation(x, y []float64) float64 {
-	stdx := standardDeviation(x)
-	stdy := standardDeviation(y)
+	stdx := StandardDeviation(x)
+	stdy := StandardDeviation(y)
 	if (stdx > 0.0) && (stdy > 0.0) {
-		return covariance(x, y) / stdx / stdy
+		return Covariance(x, y) / stdx / stdy
 	}
 	return 0.0
 
@@ -37,7 +37,7 @@ func Mean(x []float64) float64 {
 // Variance gives how distributed a vector is
 // around its mean
 func Variance(x []float64) float64 {
-	mu := mean(x)
+	mu := Mean(x)
 	var v float64
 	for _, xi := range x {
 		v += math.Pow(xi-mu, 2)
@@ -48,5 +48,5 @@ func Variance(x []float64) float64 {
 // StandardDeviation gives the unitless dispersion of
 // a vector from its mean
 func StandardDeviation(x []float64) float64 {
-	return math.Sqrt(variance(x))
+	return math.Sqrt(Variance(x))
 }
