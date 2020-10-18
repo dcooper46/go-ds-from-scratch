@@ -2,7 +2,8 @@ package main
 
 import (
 	"math"
-	"utils"
+
+	"github.com/dcooper46/go-ds-from-scratch/utils"
 )
 
 // Predict estimates y given alpha and beta parameters
