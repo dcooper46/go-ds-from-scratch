@@ -34,8 +34,9 @@ func Mean(x []float64) float64 {
 	return mu / float64(len(x))
 }
 
-// Variance gives how distributed a vector is
-// around its mean
+// Variance gives how distributed a vector is around its mean
+//
+// Note: this gives the sample variance
 func Variance(x []float64) float64 {
 	mu := Mean(x)
 	var v float64
