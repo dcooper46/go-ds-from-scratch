@@ -34,7 +34,7 @@ func stringInList(s string, list []string) bool {
 
 // Tokenize breaks a text string into unique alphanumeric words
 func Tokenize(message string) []string {
-	re, err := regexp.Compile(`[a-z0-9]`)
+	re, err := regexp.Compile(`[a-z0-9]+`)
 	if err != nil {
 		log.Fatalf("could not compile re: %s", err)
 	}
