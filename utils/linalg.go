@@ -4,6 +4,19 @@ import (
 	"fmt"
 )
 
+// VectorsEqual determine if two vectors are equal in their elements
+func VectorsEqual(x, y []float64) bool {
+	if len(x) != len(y) {
+		return false
+	}
+	for i, xi := range x {
+		if xi != y[i] {
+			return false
+		}
+	}
+	return true
+}
+
 // Dot returns the dot or inner product between vectors
 func Dot(x, y []float64) (float64, error) {
 	if len(x) != len(y) {
@@ -54,6 +67,19 @@ func Shape(mat [][]float64) (nrow, ncol int) {
 	return len(mat), len(mat[0])
 }
 
+// Transpose flips a matrix along its axes
+func Transpose(mat [][]float64) [][]float64 {
+	nrow, ncol := Shape(mat)
+	tmat := make([][]float64, ncol)
+	for i := 0; i < ncol; i++ {
+		tmat[i] = make([]float64, nrow)
+		for j := 0; j < nrow; j++ {
+			tmat[i][j] = mat[j][i]
+		}
+	}
+	return tmat
+}
+
 // ColumnSums sums elements of a nested slice (matrix) along the first axis
 func ColumnSums(mat [][]float64) ([]float64, error) {
 	colsums := make([]float64, len(mat[0]))
@@ -74,7 +100,7 @@ func ColumnMeans(mat [][]float64) ([]float64, error) {
 	if err != nil {
 		return []float64{}, err
 	}
-	n := float64(len(colsums))
+	n := float64(len(mat))
 	return ScalarMultiply(1.0/n, colsums), nil
 }
 
@@ -91,8 +117,8 @@ func MatMult(a, b [][]float64) ([][]float64, error) {
 	for i := 0; i < nrowa; i++ {
 		returnMat[i] = make([]float64, ncolb)
 		for j := 0; j < ncolb; j++ {
-			for k := 0; k < nrowb; k++ {
-				returnMat[i][j] += a[i][j] * b[k][j]
+			for k := 0; k < ncola; k++ {
+				returnMat[i][j] += a[i][k] * b[k][j]
 			}
 		}
 	}
