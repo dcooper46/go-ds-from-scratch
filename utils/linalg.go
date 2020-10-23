@@ -29,6 +29,14 @@ func Dot(x, y []float64) (float64, error) {
 	return dot, nil
 }
 
+// VectorSum sums the elements in a vector
+func VectorSum(x []float64) (vsum float64) {
+	for _, xi := range x {
+		vsum += xi
+	}
+	return
+}
+
 // VectorAdd adds two vectors elementwise
 func VectorAdd(x, y []float64) ([]float64, error) {
 	if len(x) != len(y) {
@@ -80,6 +88,15 @@ func Transpose(mat [][]float64) [][]float64 {
 	return tmat
 }
 
+// GetColumn returns a column of a nested slice (matrix) as a slice
+func GetColumn(mat [][]float64, c int) []float64 {
+	column := make([]float64, len(mat))
+	for i, row := range mat {
+		column[i] = row[c]
+	}
+	return column
+}
+
 // ColumnSums sums elements of a nested slice (matrix) along the first axis
 func ColumnSums(mat [][]float64) ([]float64, error) {
 	colsums := make([]float64, len(mat[0]))
@@ -102,6 +119,57 @@ func ColumnMeans(mat [][]float64) ([]float64, error) {
 	}
 	n := float64(len(mat))
 	return ScalarMultiply(1.0/n, colsums), nil
+}
+
+// RowSums sums elements of a nested slice (matrix) along the first axis
+func RowSums(mat [][]float64) []float64 {
+	rowsums := make([]float64, len(mat[0]))
+	for i, row := range mat {
+		rowsums[i] = VectorSum(row)
+	}
+	return rowsums
+}
+
+// RowMeans averages elements of a nested slice (matrix) along the first axis
+func RowMeans(mat [][]float64) []float64 {
+	rowmeans := make([]float64, len(mat))
+	for i, row := range mat {
+		rowsum := VectorSum(row)
+		n := float64(len(row))
+		rowmeans[i] = rowsum / n
+	}
+	return rowmeans
+}
+
+// ColumnStds returns the standard deviation of each column
+func ColumnStds(mat [][]float64) []float64 {
+	colStds := make([]float64, len(mat[0]))
+	for i := range mat[0] {
+		colStds[i] = StandardDeviation(GetColumn(mat, i))
+	}
+	return colStds
+}
+
+// Normalize scales a matrix to have columns with 0 mean and 1 std
+func Normalize(mat [][]float64) ([][]float64, error) {
+	colMeans, err := ColumnMeans(mat)
+	if err != nil {
+		return mat, err
+	}
+	colStds := ColumnStds(mat)
+
+	normalized := make([][]float64, len(mat))
+	for i, row := range mat {
+		normalized[i] = make([]float64, len(row))
+		for j := range row {
+			if colStds[j] > 0.0 {
+				normalized[i][j] = (row[j] - colMeans[j]) / colStds[j]
+			} else {
+				normalized[i][j] = row[j]
+			}
+		}
+	}
+	return normalized, nil
 }
 
 // MatMult performs matrix multiplication

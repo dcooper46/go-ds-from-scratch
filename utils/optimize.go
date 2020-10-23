@@ -36,15 +36,24 @@ func EstimateGradient(f func(xf []float64) float64, v []float64, h float64) []fl
 	return grads
 }
 
-// // Step moves the variables an amount in the direction
-// // of the gradient
-// func Step(v, direction []float64, stepSize float64) []float64 {
-// 	moved := make([]float64, len(v))
-// 	for i, vi := range v {
-// 		moved[i] = vi + stepSize*direction[i]
-// 	}
-// 	return moved
-// }
+// Negate returns the oppositive of a given function
+func Negate(f func(v []float64) float64) func(v []float64) float64 {
+	return func(v []float64) float64 {
+		return -f(v)
+	}
+}
+
+// NegateAll returns the oppositive of a given function
+func NegateAll(f func(v []float64) []float64) func(v []float64) []float64 {
+	return func(v []float64) []float64 {
+		results := f(v)
+		ret := make([]float64, len(results))
+		for i, r := range results {
+			ret[i] = -r
+		}
+		return ret
+	}
+}
 
 // Step moves the variables an amount in the direction
 // of the gradient
@@ -108,7 +117,8 @@ func StochasticGradientDecent(
 	x [][]float64,
 	y, theta0 []float64,
 	alpha0 float64,
-	maxIter int) []float64 {
+	maxIter int,
+) []float64 {
 
 	theta := theta0
 	alpha := alpha0
@@ -137,4 +147,34 @@ func StochasticGradientDecent(
 		}
 	}
 	return minTheta
+}
+
+// StochasticGradientAscent performs gradient ascent on random shuffles of data
+// updating one record at a time instead of in batch
+func StochasticGradientAscent(
+	f func(a []float64, b float64, t []float64) float64,
+	g func(a []float64, b float64, t []float64) []float64,
+	x [][]float64,
+	y, theta0 []float64,
+	alpha0 float64,
+	maxIter int,
+) []float64 {
+	return StochasticGradientDecent(
+		func(a []float64, b float64, t []float64) float64 {
+			return -f(a, b, t)
+		},
+		func(a []float64, b float64, t []float64) []float64 {
+			results := g(a, b, t)
+			ret := make([]float64, len(results))
+			for i, r := range results {
+				ret[i] = -r
+			}
+			return ret
+		},
+		x,
+		y,
+		theta0,
+		alpha0,
+		maxIter,
+	)
 }
