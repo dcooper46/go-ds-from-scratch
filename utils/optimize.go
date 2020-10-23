@@ -103,10 +103,10 @@ func BatchGradientDecent(
 // StochasticGradientDecent performs gradient decent on random shuffles of data
 // updating one record at a time instead of in batch
 func StochasticGradientDecent(
-	f func(a, b, t []float64) float64,
-	g func(a, b, t []float64) []float64,
-	x, y [][]float64,
-	theta0 []float64,
+	f func(a []float64, b float64, t []float64) float64,
+	g func(a []float64, b float64, t []float64) []float64,
+	x [][]float64,
+	y, theta0 []float64,
 	alpha0 float64,
 	maxIter int) []float64 {
 
