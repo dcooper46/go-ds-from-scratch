@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"math"
+	"strconv"
 
 	"github.com/dcooper46/go-ds-from-scratch/utils"
 )
@@ -45,34 +46,135 @@ func DataEntropy(data []string) float64 {
 // each subset
 //
 // H = q1*H(S1) + q2*H(S2) + ... + qn*H(Sn) where qi is the subset proportion
-func PartitionEntropy(subsets [][]string) (H float64) {
+func PartitionEntropy(subsets map[string][]map[string]string) float64 {
 	var N float64
+	var PartialH []float64
+
 	for _, s := range subsets {
 		N += float64(len(s))
+		vals := make([]string, len(s))
+		for i, v := range s {
+			vals[i] = v["label"]
+		}
+		PartialH = append(PartialH, DataEntropy(vals)*float64(len(vals)))
 	}
-	for _, s := range subsets {
-		H += DataEntropy(s) * float64(len(s)) / N
-	}
-	return
+
+	return utils.VectorSum(PartialH) / N
 }
 
 // PartitionBy groups data by values of an attribute
 //
 // here it is assumed the desired label is the last element in each record
-func PartitionBy(data [][]string, attribute int) map[string][]string {
-	if attribute >= len(data[0])-1 {
-		log.Fatalf("attribute index outside of possible values, or label index")
-	}
-	groups := make(map[string][]string)
+func PartitionBy(data []map[string]string, attribute string) map[string][]map[string]string {
+	groups := make(map[string][]map[string]string)
 	for _, row := range data {
-		groups[row[attribute]] = append(groups[row[attribute]], row[len(row)-1])
+		groups[row[attribute]] = append(groups[row[attribute]], row)
 	}
 	return groups
 }
 
 // GetPartitionEntropy returns the entropy of data partitioned by a specific attribute
-func GetPartitionEntropy(data [][]string, attribute int) float64 {
+func GetPartitionEntropy(data []map[string]string, attribute string) float64 {
 	partitions := PartitionBy(data, attribute)
-	subsets := make([][]string, len(partitions))
+	return PartitionEntropy(partitions)
+}
 
+// BoolTree represents a binary decision tree
+type BoolTree struct {
+	Attr  string
+	Leaf  bool
+	Value bool
+	Nodes map[string]*BoolTree
+}
+
+// BuildTreeID3 buils a  binary decision tree using the ID3 algorithm
+func BuildTreeID3(data []map[string]string, splitAttributes []string) *BoolTree {
+
+	// count trues and falses from the input data
+	NTrue, NFalse := 0, 0
+	for _, dmap := range data {
+		label, err := strconv.ParseBool(dmap["label"])
+		if err != nil {
+			log.Fatalf("bad label: %e", err)
+		}
+		if label {
+			NTrue++
+		} else {
+			NFalse++
+		}
+	}
+
+	if NTrue == 0 {
+		return &BoolTree{
+			Leaf:  true,
+			Value: false,
+		}
+	}
+	if NFalse == 0 {
+		return &BoolTree{
+			Leaf:  true,
+			Value: true,
+		}
+	}
+	if len(splitAttributes) == 0 {
+		return &BoolTree{
+			Leaf:  true,
+			Value: NTrue >= NFalse,
+		}
+	}
+
+	bestAttrEntropy := math.Inf(1)
+	var bestAttr string
+	for _, attr := range splitAttributes {
+		attrEntropy := GetPartitionEntropy(data, attr)
+		if attrEntropy < bestAttrEntropy {
+			bestAttrEntropy = attrEntropy
+			bestAttr = attr
+		}
+	}
+
+	partitions := PartitionBy(data, bestAttr)
+	var newSplitAttributes []string
+	for _, attr := range splitAttributes {
+		if attr != bestAttr {
+			newSplitAttributes = append(newSplitAttributes, attr)
+		}
+	}
+
+	children := make(map[string]*BoolTree)
+	for attr, subset := range partitions {
+		children[attr] = BuildTreeID3(subset, newSplitAttributes)
+	}
+	children["_default"] = &BoolTree{
+		Leaf:  true,
+		Value: NTrue > NFalse,
+	}
+
+	return &BoolTree{
+		Attr:  bestAttr,
+		Nodes: children,
+	}
+}
+
+func classify(tree *BoolTree, input map[string]string) bool {
+
+	for {
+		if tree.Leaf {
+			return tree.Value
+		}
+
+		attr := tree.Attr
+		node := tree.Nodes
+
+		nodeKey := input[attr]
+
+		children, ok := node[nodeKey]
+
+		if !ok {
+			nodeKey = "_none"
+			children = node[nodeKey]
+		}
+
+		tree = children
+	}
 }
