@@ -23,4 +23,31 @@ func main() {
 	for _, attribute := range []string{"level", "lang", "tweets", "phd"} {
 		fmt.Printf("%s: %f\n", attribute, GetPartitionEntropy(data, attribute))
 	}
+
+	tree := BuildTreeID3(data, []string{"level", "lang", "tweets", "phd"})
+
+	tree.Show()
+
+	fmt.Printf("Junior / Java / tweets / no phd: %v\n\n", tree.Classify(map[string]string{
+		"level":  "Junior",
+		"lang":   "Java",
+		"tweets": "Yes",
+		"phd":    "no",
+	}))
+
+	fmt.Printf("Junior / Java / tweets / phd: %v\n\n", tree.Classify(map[string]string{
+		"level":  "Junior",
+		"lang":   "Java",
+		"tweets": "Yes",
+		"phd":    "yes",
+	}))
+
+	fmt.Printf("Intern: %v\n\n", tree.Classify(map[string]string{
+		"level": "Intern",
+	}))
+
+	fmt.Printf("Senior: %v\n", tree.Classify(map[string]string{
+		"level": "Senior",
+	}))
+
 }

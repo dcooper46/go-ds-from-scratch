@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"math"
 	"strconv"
+	"strings"
 
 	"github.com/dcooper46/go-ds-from-scratch/utils"
 )
@@ -156,8 +158,9 @@ func BuildTreeID3(data []map[string]string, splitAttributes []string) *BoolTree 
 	}
 }
 
-func classify(tree *BoolTree, input map[string]string) bool {
-
+// Classify returns a boolean label for a given input map
+// by parsing the defined BoolTree
+func (tree *BoolTree) Classify(input map[string]string) bool {
 	for {
 		if tree.Leaf {
 			return tree.Value
@@ -166,15 +169,32 @@ func classify(tree *BoolTree, input map[string]string) bool {
 		attr := tree.Attr
 		node := tree.Nodes
 
-		nodeKey := input[attr]
+		nodeKey, ok := input[attr]
+		if !ok { // tree attribute note in input data
+			nodeKey = "_default"
+		}
 
 		children, ok := node[nodeKey]
-
 		if !ok {
-			nodeKey = "_none"
+			fmt.Printf("key not found: %s\n", nodeKey)
+			nodeKey = "_default"
 			children = node[nodeKey]
 		}
 
 		tree = children
 	}
+}
+
+// Show recursively prints a BoolTree
+func (tree *BoolTree) Show(tabs ...string) {
+	fmt.Println(strings.Join(append(tabs, "{"), ""))
+	fmt.Printf("\t"+strings.Join(tabs, "")+"Attr: %s\n", tree.Attr)
+	fmt.Printf("\t"+strings.Join(tabs, "")+"Leaf: %v\n", tree.Leaf)
+	fmt.Printf("\t"+strings.Join(tabs, "")+"Value: %v\n", tree.Value)
+	fmt.Println("\t" + strings.Join(tabs, "") + "Children: ")
+	for a, t := range tree.Nodes {
+		fmt.Printf("\t"+strings.Join(tabs, "")+"Label: %s\n", a)
+		t.Show(strings.Join(append(tabs, "\t"), ""))
+	}
+	fmt.Println(strings.Join(append(tabs, "}"), ""))
 }
