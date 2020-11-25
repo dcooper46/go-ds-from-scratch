@@ -8,6 +8,10 @@ func main() {
 			{20.0, 20.0, -30.0}, // 'and' neuron
 			{20.0, 20.0, -10.0}, // 'or' neuron
 		},
+		{
+			{20.0, 20.0, -30.0}, // 'and' neuron
+			{20.0, 20.0, -10.0}, // 'or' neuron
+		},
 		{{-60.0, 60.0, -30.0}}, // '2nd input but not first input' neuron
 	}
 
@@ -16,7 +20,7 @@ func main() {
 			fmt.Printf("%f, %f, %v\n",
 				x,
 				y,
-				feedForward(xorNetwork, []float64{x, y})[1],
+				feedForward(xorNetwork, []float64{x, y})[len(xorNetwork)-1],
 			)
 		}
 	}
