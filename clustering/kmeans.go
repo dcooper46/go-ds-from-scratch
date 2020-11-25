@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"math"
 	"math/rand"
+	"time"
 
 	"github.com/dcooper46/go-ds-from-scratch/utils"
 )
@@ -38,17 +40,18 @@ func (km *KMeans) Classify(x []float64) int {
 // Train takes input training data and determines the optimal
 // clusters based on the number requested
 func (km *KMeans) Train(data [][]float64) {
-	dim := len(data[0])
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	// initialize cluster centers
+	// initialize cluster centers with random elements from data
 	km.means = make([][]float64, km.k)
 	for i := 0; i < km.k; i++ {
-		mu := make([]float64, dim)
-		for j := 0; j < dim; j++ {
-			mu[j] = rand.Float64()
-		}
-		km.means[i] = mu
+		// mu := make([]float64, dim)
+		// for j := 0; j < dim; j++ {
+		// 	mu[j] = rand.Float64()
+		// }
+		km.means[i] = data[r.Intn(len(data))]
 	}
+	fmt.Printf("initial means: %v\n", km.means)
 
 	clusters := make([]float64, len(data))
 	newClusters := make([]float64, len(data))
