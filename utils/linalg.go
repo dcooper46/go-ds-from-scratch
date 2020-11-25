@@ -29,6 +29,11 @@ func Dot(x, y []float64) (float64, error) {
 	return dot, nil
 }
 
+//SumOfSquares sums the squared elements of a vector
+func SumOfSquares(x []float64) (float64, error) {
+	return Dot(x, x)
+}
+
 // VectorSum sums the elements in a vector
 func VectorSum(x []float64) (vsum float64) {
 	for _, xi := range x {
@@ -68,6 +73,19 @@ func ScalarMultiply(s float64, vec []float64) []float64 {
 		svec[i] = s * v
 	}
 	return svec
+}
+
+// SquaredDistance computes the sum of squared deviations between two vectors
+func SquaredDistance(x, y []float64) (float64, error) {
+	diff, err := VectorSub(x, y)
+	if err != nil {
+		return 0.0, err
+	}
+	squaredDist, err := SumOfSquares(diff)
+	if err != nil {
+		return 0.0, err
+	}
+	return squaredDist, nil
 }
 
 // Shape returns the dimensions of a nested slice (matrix)
